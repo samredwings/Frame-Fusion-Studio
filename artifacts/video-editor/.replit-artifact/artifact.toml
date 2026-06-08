@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Video Editor"
+version = "1.0.0"
+id = "artifacts/video-editor"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23091
+
+[services.development]
+run = "pnpm --filter @workspace/video-editor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/video-editor", "run", "build" ]
+publicDir = "artifacts/video-editor/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23091"
+BASE_PATH = "/"
