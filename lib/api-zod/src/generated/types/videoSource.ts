@@ -11,6 +11,11 @@ export interface VideoSource {
   id: number;
   projectId: number;
   filename: string;
+  /**
+     * GCS object path for the stored video file
+     * @nullable
+     */
+  objectPath?: string | null;
   role: VideoSourceRole;
   /** @nullable */
   fps?: number | null;
@@ -18,6 +23,12 @@ export interface VideoSource {
   totalFrames?: number | null;
   /** @nullable */
   durationMs?: number | null;
+  /** @nullable */
+  width?: number | null;
+  /** @nullable */
+  height?: number | null;
+  /** @nullable */
+  fileSize?: number | null;
   /** @nullable */
   notes?: string | null;
   createdAt: string;

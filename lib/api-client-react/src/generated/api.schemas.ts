@@ -82,6 +82,11 @@ export interface VideoSource {
   id: number;
   projectId: number;
   filename: string;
+  /**
+     * GCS object path for the stored video file
+     * @nullable
+     */
+  objectPath?: string | null;
   role: VideoSourceRole;
   /** @nullable */
   fps?: number | null;
@@ -89,6 +94,12 @@ export interface VideoSource {
   totalFrames?: number | null;
   /** @nullable */
   durationMs?: number | null;
+  /** @nullable */
+  width?: number | null;
+  /** @nullable */
+  height?: number | null;
+  /** @nullable */
+  fileSize?: number | null;
   /** @nullable */
   notes?: string | null;
   createdAt: string;
@@ -105,10 +116,14 @@ export const VideoSourceInputRole = {
 
 export interface VideoSourceInput {
   filename: string;
+  objectPath?: string;
   role: VideoSourceInputRole;
   fps?: number;
   totalFrames?: number;
   durationMs?: number;
+  width?: number;
+  height?: number;
+  fileSize?: number;
   notes?: string;
 }
 
@@ -123,9 +138,13 @@ export const VideoSourceUpdateRole = {
 
 export interface VideoSourceUpdate {
   role?: VideoSourceUpdateRole;
+  objectPath?: string;
   fps?: number;
   totalFrames?: number;
   durationMs?: number;
+  width?: number;
+  height?: number;
+  fileSize?: number;
   notes?: string;
 }
 
@@ -240,5 +259,24 @@ export interface FrameEditInput {
   editType: FrameEditInputEditType;
   replacementDataUrl?: string;
   notes?: string;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 

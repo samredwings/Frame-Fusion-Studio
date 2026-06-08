@@ -9,9 +9,13 @@ import type { VideoSourceInputRole } from './videoSourceInputRole';
 
 export interface VideoSourceInput {
   filename: string;
+  objectPath?: string;
   role: VideoSourceInputRole;
   fps?: number;
   totalFrames?: number;
   durationMs?: number;
+  width?: number;
+  height?: number;
+  fileSize?: number;
   notes?: string;
 }

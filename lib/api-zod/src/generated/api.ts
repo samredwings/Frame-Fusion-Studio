@@ -9,6 +9,44 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+}).optional()
+})
+
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+
+/**
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -119,10 +157,14 @@ export const ListSourcesResponseItem = zod.object({
   "id": zod.number(),
   "projectId": zod.number(),
   "filename": zod.string(),
+  "objectPath": zod.string().nullish().describe('GCS object path for the stored video file'),
   "role": zod.enum(['primary', 'comparison', 'reference']),
   "fps": zod.number().nullish(),
   "totalFrames": zod.number().nullish(),
   "durationMs": zod.number().nullish(),
+  "width": zod.number().nullish(),
+  "height": zod.number().nullish(),
+  "fileSize": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -138,10 +180,14 @@ export const AddSourceParams = zod.object({
 
 export const AddSourceBody = zod.object({
   "filename": zod.string(),
+  "objectPath": zod.string().optional(),
   "role": zod.enum(['primary', 'comparison', 'reference']),
   "fps": zod.number().optional(),
   "totalFrames": zod.number().optional(),
   "durationMs": zod.number().optional(),
+  "width": zod.number().optional(),
+  "height": zod.number().optional(),
+  "fileSize": zod.number().optional(),
   "notes": zod.string().optional()
 })
 
@@ -165,9 +211,13 @@ export const UpdateSourceParams = zod.object({
 
 export const UpdateSourceBody = zod.object({
   "role": zod.enum(['primary', 'comparison', 'reference']).optional(),
+  "objectPath": zod.string().optional(),
   "fps": zod.number().optional(),
   "totalFrames": zod.number().optional(),
   "durationMs": zod.number().optional(),
+  "width": zod.number().optional(),
+  "height": zod.number().optional(),
+  "fileSize": zod.number().optional(),
   "notes": zod.string().optional()
 })
 
@@ -175,10 +225,14 @@ export const UpdateSourceResponse = zod.object({
   "id": zod.number(),
   "projectId": zod.number(),
   "filename": zod.string(),
+  "objectPath": zod.string().nullish().describe('GCS object path for the stored video file'),
   "role": zod.enum(['primary', 'comparison', 'reference']),
   "fps": zod.number().nullish(),
   "totalFrames": zod.number().nullish(),
   "durationMs": zod.number().nullish(),
+  "width": zod.number().nullish(),
+  "height": zod.number().nullish(),
+  "fileSize": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })

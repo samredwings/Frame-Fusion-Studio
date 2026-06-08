@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: storage
+    description: Object storage upload and serving endpoints
   - name: projects
     description: Video editing projects
   - name: sources
@@ -19,6 +21,61 @@ tags:
   - name: frameEdits
     description: Frame replacement/edit records per project
 paths:
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to generate URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /healthz:
     get:
       operationId: healthCheck
@@ -479,6 +536,9 @@ components:
           type: integer
         filename:
           type: string
+        objectPath:
+          type: ["string", "null"]
+          description: GCS object path for the stored video file
         role:
           type: string
           enum: [primary, comparison, reference]
@@ -487,6 +547,12 @@ components:
         totalFrames:
           type: ["integer", "null"]
         durationMs:
+          type: ["integer", "null"]
+        width:
+          type: ["integer", "null"]
+        height:
+          type: ["integer", "null"]
+        fileSize:
           type: ["integer", "null"]
         notes:
           type: ["string", "null"]
@@ -499,6 +565,8 @@ components:
       properties:
         filename:
           type: string
+        objectPath:
+          type: string
         role:
           type: string
           enum: [primary, comparison, reference]
@@ -507,6 +575,12 @@ components:
         totalFrames:
           type: integer
         durationMs:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        fileSize:
           type: integer
         notes:
           type: string
@@ -517,11 +591,19 @@ components:
         role:
           type: string
           enum: [primary, comparison, reference]
+        objectPath:
+          type: string
         fps:
           type: number
         totalFrames:
           type: integer
         durationMs:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        fileSize:
           type: integer
         notes:
           type: string
@@ -630,4 +712,37 @@ components:
         replacementDataUrl:
           type: string
         notes:
+          type: string
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
           type: string

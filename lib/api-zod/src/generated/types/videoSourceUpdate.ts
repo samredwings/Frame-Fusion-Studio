@@ -9,8 +9,12 @@ import type { VideoSourceUpdateRole } from './videoSourceUpdateRole';
 
 export interface VideoSourceUpdate {
   role?: VideoSourceUpdateRole;
+  objectPath?: string;
   fps?: number;
   totalFrames?: number;
   durationMs?: number;
+  width?: number;
+  height?: number;
+  fileSize?: number;
   notes?: string;
 }
