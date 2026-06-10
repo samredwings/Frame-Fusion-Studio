@@ -3,11 +3,12 @@ import { useGetProject, useListSources, useUpdateProject } from "@workspace/api-
 import { useParams } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Film, SplitSquareHorizontal, ScanFace, Upload } from "lucide-react";
+import { Film, SplitSquareHorizontal, ScanFace, Upload, Crosshair } from "lucide-react";
 import { FrameEditor } from "@/components/video-editor/frame-editor";
 import { MultiCompare } from "@/components/video-editor/multi-compare";
 import { BlurStudio } from "@/components/video-editor/blur-studio";
 import { ExportsPanel } from "@/components/video-editor/exports";
+import { FaceSyncStudio } from "@/components/video-editor/face-sync";
 
 export function ProjectWorkspace() {
   const params = useParams();
@@ -80,6 +81,13 @@ export function ProjectWorkspace() {
               Blur Studio
             </TabsTrigger>
             <TabsTrigger 
+              value="face-sync" 
+              className="data-[state=active]:bg-card data-[state=active]:border-border data-[state=active]:border-x data-[state=active]:border-t rounded-none rounded-t-md px-4 py-2 border border-transparent border-b-0 h-9 font-mono text-xs tracking-wide"
+            >
+              <Crosshair className="w-3.5 h-3.5 mr-2" />
+              FaceSync
+            </TabsTrigger>
+            <TabsTrigger 
               value="exports" 
               className="data-[state=active]:bg-card data-[state=active]:border-border data-[state=active]:border-x data-[state=active]:border-t rounded-none rounded-t-md px-4 py-2 border border-transparent border-b-0 h-9 font-mono text-xs tracking-wide"
             >
@@ -98,6 +106,9 @@ export function ProjectWorkspace() {
           </TabsContent>
           <TabsContent value="blur-studio" className="absolute inset-0 m-0 border-0 p-0 h-full w-full">
             <BlurStudio project={project} sources={sources || []} />
+          </TabsContent>
+          <TabsContent value="face-sync" className="absolute inset-0 m-0 border-0 p-0 h-full w-full">
+            <FaceSyncStudio project={project} />
           </TabsContent>
           <TabsContent value="exports" className="absolute inset-0 m-0 border-0 p-0 h-full w-full">
             <ExportsPanel project={project} />
