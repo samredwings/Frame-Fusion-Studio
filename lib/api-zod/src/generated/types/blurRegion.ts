@@ -12,6 +12,14 @@ export interface BlurRegion {
   projectId: number;
   label: string;
   blurType: BlurRegionBlurType;
+  /** Left edge as percentage of frame width (0-100) */
+  x?: number;
+  /** Top edge as percentage of frame height (0-100) */
+  y?: number;
+  /** Width as percentage of frame width (0-100) */
+  width?: number;
+  /** Height as percentage of frame height (0-100) */
+  height?: number;
   frameStart: number;
   frameEnd: number;
   trackingEnabled: boolean;

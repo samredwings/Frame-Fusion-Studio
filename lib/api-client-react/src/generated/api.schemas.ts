@@ -156,6 +156,7 @@ export const BlurRegionBlurType = {
   body: 'body',
   region: 'region',
   custom: 'custom',
+  gaussian: 'gaussian',
 } as const;
 
 export interface BlurRegion {
@@ -163,6 +164,14 @@ export interface BlurRegion {
   projectId: number;
   label: string;
   blurType: BlurRegionBlurType;
+  /** Left edge as percentage of frame width (0-100) */
+  x?: number;
+  /** Top edge as percentage of frame height (0-100) */
+  y?: number;
+  /** Width as percentage of frame width (0-100) */
+  width?: number;
+  /** Height as percentage of frame height (0-100) */
+  height?: number;
   frameStart: number;
   frameEnd: number;
   trackingEnabled: boolean;
@@ -183,11 +192,16 @@ export const BlurRegionInputBlurType = {
   body: 'body',
   region: 'region',
   custom: 'custom',
+  gaussian: 'gaussian',
 } as const;
 
 export interface BlurRegionInput {
   label: string;
   blurType: BlurRegionInputBlurType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
   frameStart: number;
   frameEnd: number;
   trackingEnabled?: boolean;
@@ -203,11 +217,16 @@ export const BlurRegionUpdateBlurType = {
   body: 'body',
   region: 'region',
   custom: 'custom',
+  gaussian: 'gaussian',
 } as const;
 
 export interface BlurRegionUpdate {
   label?: string;
   blurType?: BlurRegionUpdateBlurType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
   frameStart?: number;
   frameEnd?: number;
   trackingEnabled?: boolean;

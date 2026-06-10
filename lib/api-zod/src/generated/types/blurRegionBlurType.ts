@@ -14,4 +14,5 @@ export const BlurRegionBlurType = {
   body: 'body',
   region: 'region',
   custom: 'custom',
+  gaussian: 'gaussian',
 } as const;

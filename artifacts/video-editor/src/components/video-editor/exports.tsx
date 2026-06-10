@@ -101,10 +101,10 @@ export function ExportsPanel({ project }: ExportsPanelProps) {
                 ctx.drawImage(img, 0, 0);
 
                 activeBlurs.forEach((b: BlurRegion) => {
-                  const x = (b.x / 100) * canvas.width;
-                  const y = (b.y / 100) * canvas.height;
-                  const w = (b.width / 100) * canvas.width;
-                  const h = (b.height / 100) * canvas.height;
+                  const x = ((b.x ?? 0) / 100) * canvas.width;
+                  const y = ((b.y ?? 0) / 100) * canvas.height;
+                  const w = ((b.width ?? 0) / 100) * canvas.width;
+                  const h = ((b.height ?? 0) / 100) * canvas.height;
                   ctx.save();
                   ctx.filter = "blur(12px)";
                   ctx.drawImage(img, x, y, w, h, x, y, w, h);

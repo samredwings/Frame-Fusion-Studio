@@ -10,6 +10,10 @@ import type { BlurRegionUpdateBlurType } from './blurRegionUpdateBlurType';
 export interface BlurRegionUpdate {
   label?: string;
   blurType?: BlurRegionUpdateBlurType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
   frameStart?: number;
   frameEnd?: number;
   trackingEnabled?: boolean;

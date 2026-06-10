@@ -620,7 +620,19 @@ components:
           type: string
         blurType:
           type: string
-          enum: [face, body, region, custom]
+          enum: [face, body, region, custom, gaussian]
+        x:
+          type: number
+          description: Left edge as percentage of frame width (0-100)
+        y:
+          type: number
+          description: Top edge as percentage of frame height (0-100)
+        width:
+          type: number
+          description: Width as percentage of frame width (0-100)
+        height:
+          type: number
+          description: Height as percentage of frame height (0-100)
         frameStart:
           type: integer
         frameEnd:
@@ -643,7 +655,15 @@ components:
           type: string
         blurType:
           type: string
-          enum: [face, body, region, custom]
+          enum: [face, body, region, custom, gaussian]
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
         frameStart:
           type: integer
         frameEnd:
@@ -662,7 +682,15 @@ components:
           type: string
         blurType:
           type: string
-          enum: [face, body, region, custom]
+          enum: [face, body, region, custom, gaussian]
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
         frameStart:
           type: integer
         frameEnd:

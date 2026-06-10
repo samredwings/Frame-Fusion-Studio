@@ -84,10 +84,10 @@ export function BlurStudio({ project, sources }: BlurStudioProps) {
         (r) => r.frameStart <= frames[currentFrame].index && r.frameEnd >= frames[currentFrame].index && r.masked
       );
       regions.forEach((r) => {
-        const x = (r.x / 100) * canvas.width;
-        const y = (r.y / 100) * canvas.height;
-        const w = (r.width / 100) * canvas.width;
-        const h = (r.height / 100) * canvas.height;
+        const x = ((r.x ?? 0) / 100) * canvas.width;
+        const y = ((r.y ?? 0) / 100) * canvas.height;
+        const w = ((r.width ?? 0) / 100) * canvas.width;
+        const h = ((r.height ?? 0) / 100) * canvas.height;
         ctx.save();
         ctx.filter = "blur(12px)";
         ctx.drawImage(img, x, y, w, h, x, y, w, h);
@@ -196,7 +196,7 @@ export function BlurStudio({ project, sources }: BlurStudioProps) {
         const h = Math.min(100 - y, (box.height / img.naturalHeight + padding * 2) * 100);
         if (w > 1 && h > 1) {
           await createBlur.mutateAsync({
-            projectId: project.id,
+            id: project.id,
             data: {
               label: `Face ${(blurRegions?.length ?? 0) + 1}`,
               blurType: "gaussian",
@@ -209,7 +209,7 @@ export function BlurStudio({ project, sources }: BlurStudioProps) {
           });
         }
       }
-      await queryClient.invalidateQueries({ queryKey: ["listProjectBlurRegions", project.id] });
+      await queryClient.invalidateQueries({ queryKey: ["listBlurRegions", project.id] });
     } catch (e) {
       console.error("Face detection failed:", e);
     } finally {
@@ -302,7 +302,7 @@ export function BlurStudio({ project, sources }: BlurStudioProps) {
                 Frames {r.frameStart}–{r.frameEnd} · {r.blurType}
               </div>
               <div className="text-[10px] text-muted-foreground">
-                {r.x.toFixed(1)}%,{r.y.toFixed(1)}% {r.width.toFixed(1)}×{r.height.toFixed(1)}
+                {(r.x ?? 0).toFixed(1)}%,{(r.y ?? 0).toFixed(1)}% {(r.width ?? 0).toFixed(1)}×{(r.height ?? 0).toFixed(1)}
               </div>
             </div>
           ))}

@@ -204,7 +204,7 @@ export function useFFmpeg() {
 
       const mimeTypes: Record<string, string> = { mp4: "video/mp4", webm: "video/webm", gif: "image/gif" };
       setProgress(100);
-      return new Blob([data], { type: mimeTypes[format] });
+      return new Blob([new Uint8Array(data)], { type: mimeTypes[format] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Encoding failed");
       return null;

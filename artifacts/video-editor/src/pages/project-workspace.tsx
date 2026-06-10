@@ -14,11 +14,11 @@ export function ProjectWorkspace() {
   const projectId = parseInt(params.id || "0", 10);
   
   const { data: project, isLoading: projectLoading } = useGetProject(projectId, { 
-    query: { enabled: !!projectId } 
+    query: { enabled: !!projectId } as never
   });
   
   const { data: sources, isLoading: sourcesLoading } = useListSources(projectId, {
-    query: { enabled: !!projectId }
+    query: { enabled: !!projectId } as never
   });
 
   if (projectLoading || sourcesLoading) {

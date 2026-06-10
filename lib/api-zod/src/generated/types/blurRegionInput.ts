@@ -10,6 +10,10 @@ import type { BlurRegionInputBlurType } from './blurRegionInputBlurType';
 export interface BlurRegionInput {
   label: string;
   blurType: BlurRegionInputBlurType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
   frameStart: number;
   frameEnd: number;
   trackingEnabled?: boolean;

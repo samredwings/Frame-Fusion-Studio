@@ -28,7 +28,7 @@ export function ProjectSettings() {
   const queryClient = useQueryClient();
   
   const { data: project, isLoading } = useGetProject(projectId, { 
-    query: { enabled: !!projectId } 
+    query: { enabled: !!projectId } as never
   });
   
   const updateProject = useUpdateProject();

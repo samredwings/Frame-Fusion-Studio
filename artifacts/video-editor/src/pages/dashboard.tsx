@@ -22,7 +22,7 @@ const createProjectSchema = z.object({
 });
 
 function ProjectCard({ project }: { project: any }) {
-  const { data: stats, isLoading } = useGetProjectStats(project.id, { query: { enabled: !!project.id } });
+  const { data: stats, isLoading } = useGetProjectStats(project.id, { query: { enabled: !!project.id } as never });
 
   return (
     <Link href={`/projects/${project.id}`}>
