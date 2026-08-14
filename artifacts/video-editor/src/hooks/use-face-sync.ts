@@ -128,45 +128,86 @@ async function extractFramesFromVideo(
     const video = document.createElement("video");
     video.muted = true;
     video.playsInline = true;
+    video.preload = "auto";
     const url = URL.createObjectURL(file);
+    let settled = false;
+
+    const cleanup = () => {
+      video.onloadedmetadata = null;
+      video.onerror = null;
+      URL.revokeObjectURL(url);
+    };
+
+    const fail = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error instanceof Error ? error : new Error("Failed to read video"));
+    };
+
+    const seekTo = (time: number) =>
+      new Promise<void>((resolveSeek, rejectSeek) => {
+        let finished = false;
+        const finish = (callback: () => void) => {
+          if (finished) return;
+          finished = true;
+          window.clearTimeout(timeout);
+          video.removeEventListener("seeked", onSeeked);
+          video.removeEventListener("error", onError);
+          callback();
+        };
+        const onSeeked = () => finish(resolveSeek);
+        const onError = () => finish(() => rejectSeek(new Error("Failed while seeking video")));
+        const timeout = window.setTimeout(() => finish(resolveSeek), 5000);
+        video.addEventListener("seeked", onSeeked, { once: true });
+        video.addEventListener("error", onError, { once: true });
+        video.currentTime = time;
+      });
+
+    video.onloadedmetadata = () => {
+      void (async () => {
+        try {
+          const duration = video.duration;
+          if (!Number.isFinite(duration) || duration <= 0 || video.videoWidth <= 0 || video.videoHeight <= 0) {
+            throw new Error("This video has no readable frames");
+          }
+
+          const step = 1 / Math.max(1, fps);
+          const count = Math.min(maxFrames, Math.max(1, Math.ceil(duration * fps)));
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Your browser cannot create a video canvas");
+
+          const results: { dataUrl: string; timestamp: number; width: number; height: number }[] = [];
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+
+          for (let i = 0; i < count; i++) {
+            const timestamp = Math.min(i * step, Math.max(0, duration - 0.001));
+            await seekTo(timestamp);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            results.push({
+              dataUrl: canvas.toDataURL("image/jpeg", 0.85),
+              timestamp,
+              width: canvas.width,
+              height: canvas.height,
+            });
+            onProgress(Math.round(((i + 1) / count) * 100));
+          }
+
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(results);
+        } catch (error) {
+          fail(error);
+        }
+      })();
+    };
+
+    video.onerror = () => fail(new Error("Failed to load video. Try an MP4 or WebM file."));
     video.src = url;
-
-    video.onloadedmetadata = async () => {
-      const duration = video.duration;
-      const step = 1 / fps;
-      const count = Math.min(maxFrames, Math.ceil(duration * fps));
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
-      const results: { dataUrl: string; timestamp: number; width: number; height: number }[] = [];
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      for (let i = 0; i < count; i++) {
-        const t = i * step;
-        video.currentTime = t;
-        await new Promise<void>((r) => {
-          video.onseeked = () => r();
-          setTimeout(r, 500);
-        });
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        results.push({
-          dataUrl: canvas.toDataURL("image/jpeg", 0.85),
-          timestamp: t,
-          width: canvas.width,
-          height: canvas.height,
-        });
-        onProgress(Math.round(((i + 1) / count) * 100));
-      }
-
-      URL.revokeObjectURL(url);
-      resolve(results);
-    };
-
-    video.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load video"));
-    };
+    video.load();
   });
 }
 
@@ -270,6 +311,7 @@ export function useFaceSync() {
   });
 
   const detectorRef = useRef<unknown>(null);
+  const operationRef = useRef(0);
 
   const setPhase = useCallback(
     (phase: FaceSyncPhase, progress = 0, extra: Partial<FaceSyncState> = {}) => {
@@ -280,6 +322,8 @@ export function useFaceSync() {
 
   const analyzeVideo = useCallback(
     async (file: File, analysisFps = 2, maxFrames = 120) => {
+      const operation = ++operationRef.current;
+      const isCurrent = () => operationRef.current === operation;
       setPhase("extracting", 0);
 
       try {
@@ -287,8 +331,13 @@ export function useFaceSync() {
           file,
           analysisFps,
           maxFrames,
-          (pct) => setState((s) => ({ ...s, progress: Math.round(pct * 0.4) }))
+          (pct) => {
+            if (isCurrent()) {
+              setState((s) => ({ ...s, progress: Math.round(pct * 0.4) }));
+            }
+          }
         );
+        if (!isCurrent()) return;
 
         setPhase("analyzing", 40, { totalFrames: rawFrames.length });
 
@@ -297,21 +346,27 @@ export function useFaceSync() {
         );
 
         if (!detectorRef.current) {
-          const filesetResolver = await FilesetResolver.forVisionTasks(
-            MEDIAPIPE_WASM
-          );
-          detectorRef.current = await FaceLandmarker.createFromOptions(
-            filesetResolver,
-            {
-              baseOptions: {
-                modelAssetPath: FACE_LANDMARKER_MODEL,
-                delegate: "GPU",
-              },
-              outputFaceBlendshapes: false,
-              runningMode: "IMAGE",
-              numFaces: 1,
-            }
-          );
+          const filesetResolver = await FilesetResolver.forVisionTasks(MEDIAPIPE_WASM);
+          const options = {
+            baseOptions: {
+              modelAssetPath: FACE_LANDMARKER_MODEL,
+              delegate: "GPU" as const,
+            },
+            outputFaceBlendshapes: false,
+            runningMode: "IMAGE" as const,
+            numFaces: 1,
+          };
+
+          try {
+            detectorRef.current = await FaceLandmarker.createFromOptions(filesetResolver, options);
+          } catch {
+            // Some browsers cannot initialize the GPU delegate. CPU keeps the
+            // feature usable instead of failing before the first frame.
+            detectorRef.current = await FaceLandmarker.createFromOptions(filesetResolver, {
+              ...options,
+              baseOptions: { ...options.baseOptions, delegate: "CPU" as const },
+            });
+          }
         }
 
         const detector = detectorRef.current as {
@@ -323,6 +378,7 @@ export function useFaceSync() {
         const analyzed: FrameFaceData[] = [];
 
         for (let i = 0; i < rawFrames.length; i++) {
+          if (!isCurrent()) return;
           const f = rawFrames[i];
           const img = await new Promise<HTMLImageElement>((resolve, reject) => {
             const el = new Image();
@@ -360,12 +416,15 @@ export function useFaceSync() {
             restoredDataUrl: null,
           });
 
-          setState((s) => ({
-            ...s,
-            progress: 40 + Math.round(((i + 1) / rawFrames.length) * 50),
-            frames: [...analyzed],
-          }));
+          if (isCurrent()) {
+            setState((s) => ({
+              ...s,
+              progress: 40 + Math.round(((i + 1) / rawFrames.length) * 50),
+              frames: [...analyzed],
+            }));
+          }
         }
+        if (!isCurrent()) return;
 
         const bestRef = analyzed.reduce<number>((best, f, idx) => {
           if (!f.landmarks) return best;
@@ -413,28 +472,35 @@ export function useFaceSync() {
 
   const restoreFrames = useCallback(
     async (threshold: number, strength: number) => {
-      setState((s) => ({ ...s, phase: "restoring", progress: 0 }));
+      const operation = ++operationRef.current;
+      const isCurrent = () => operationRef.current === operation;
+      const ref = state.frames[state.referenceIdx];
+      if (!ref?.landmarks) {
+        setState((s) => ({ ...s, phase: "done", progress: 100 }));
+        return;
+      }
 
-      setState((s) => {
-        const ref = s.frames[s.referenceIdx];
-        if (!ref?.landmarks) return { ...s, phase: "done" as FaceSyncPhase };
-        const toRestore = s.frames.filter(
-          (f) => f.driftScore >= threshold && f.landmarks && f.faceBounds
-        );
+      const toRestore = state.frames.filter(
+        (f) => f.driftScore >= threshold && f.landmarks && f.faceBounds && !f.restored
+      );
+      if (!toRestore.length) {
+        setState((s) => ({ ...s, phase: "done", progress: 100 }));
+        return;
+      }
 
-        const refKeyPts = computeKeyPoints(ref.landmarks, ref.width, ref.height);
-        if (!refKeyPts) return { ...s, phase: "done" as FaceSyncPhase };
+      const refKeyPts = computeKeyPoints(ref.landmarks, ref.width, ref.height);
+      if (!refKeyPts) {
+        setState((s) => ({ ...s, phase: "done", progress: 100 }));
+        return;
+      }
 
+      setState((s) => ({ ...s, phase: "restoring", progress: 0, error: null }));
+
+      try {
         let done = 0;
-        const total = toRestore.length;
-
-        Promise.all(
+        const results = await Promise.all(
           toRestore.map(async (f) => {
-            const tgtKeyPts = computeKeyPoints(
-              f.landmarks!,
-              f.width,
-              f.height
-            );
+            const tgtKeyPts = computeKeyPoints(f.landmarks!, f.width, f.height);
             if (!tgtKeyPts) return { idx: f.frameIndex, dataUrl: null };
 
             const restored = await restoreFaceCanvas(
@@ -446,30 +512,37 @@ export function useFaceSync() {
               f.height,
               strength
             );
-
+            if (!isCurrent()) return { idx: f.frameIndex, dataUrl: null };
             done++;
             setState((prev) => ({
               ...prev,
-              progress: Math.round((done / total) * 100),
+              progress: Math.round((done / toRestore.length) * 100),
             }));
-
             return { idx: f.frameIndex, dataUrl: restored };
           })
-        ).then((results) => {
-          setState((prev) => {
-            const updated = prev.frames.map((f) => {
-              const r = results.find((x) => x.idx === f.frameIndex);
-              if (!r || !r.dataUrl) return f;
-              return { ...f, restored: true, restoredDataUrl: r.dataUrl };
-            });
-            return { ...prev, phase: "done", progress: 100, frames: updated };
-          });
-        });
+        );
 
-        return s;
-      });
+        if (!isCurrent()) return;
+        setState((prev) => ({
+          ...prev,
+          phase: "done",
+          progress: 100,
+          frames: prev.frames.map((f) => {
+            const result = results.find((item) => item.idx === f.frameIndex);
+            return result?.dataUrl
+              ? { ...f, restored: true, restoredDataUrl: result.dataUrl }
+              : f;
+          }),
+        }));
+      } catch (error) {
+        setState((s) => ({
+          ...s,
+          phase: "error",
+          error: error instanceof Error ? error.message : "Face restoration failed",
+        }));
+      }
     },
-    []
+    [state]
   );
 
   const clearRestoration = useCallback((frameIdx: number) => {
@@ -484,6 +557,7 @@ export function useFaceSync() {
   }, []);
 
   const reset = useCallback(() => {
+    operationRef.current++;
     setState({
       phase: "idle",
       progress: 0,

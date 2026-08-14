@@ -132,8 +132,12 @@ export function FaceSyncStudio({ project }: Props) {
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!file.type.startsWith("video/")) return;
+      if (!file.type.startsWith("video/")) {
+        setSavedCount(0);
+        return;
+      }
       reset();
+      setSelectedIdx(0);
       setSavedCount(0);
       analyzeVideo(file, analysisFps, 150);
     },
@@ -186,6 +190,13 @@ export function FaceSyncStudio({ project }: Props) {
     setSavedCount(count);
     setIsSaving(false);
   }, [state.frames, project.id, createFrameEdit, queryClient]);
+
+  const handleReset = useCallback(() => {
+    reset();
+    setSelectedIdx(0);
+    setSavedCount(0);
+    setShowOriginal(false);
+  }, [reset]);
 
   const navigate = useCallback(
     (dir: -1 | 1) => {
@@ -248,7 +259,7 @@ export function FaceSyncStudio({ project }: Props) {
           </Badge>
         )}
         {state.phase !== "idle" && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs font-mono" onClick={reset}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs font-mono" onClick={handleReset}>
             <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
             Reset
           </Button>
@@ -654,7 +665,6 @@ export function FaceSyncStudio({ project }: Props) {
                 threshold={threshold}
                 onClick={() => {
                   setSelectedIdx(i);
-                  if (f.landmarks) setReferenceFrame(f.frameIndex);
                 }}
               />
             ))}

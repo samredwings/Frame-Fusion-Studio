@@ -1,3 +1,4 @@
 - [Orval mutation signatures](orval-mutation-sigs.md) — mutations take `{id: number, data: ...}` not `{projectId: number, data: ...}`; query hooks take positional `id` first arg
 - [React Query v5 queryKey cast](rq-v5-querykey.md) — orval-generated hooks type `query` option as full `UseQueryOptions` requiring `queryKey`; use `as never` cast for `{enabled}` only options
 - [Drizzle nullable columns](drizzle-nullable.md) — columns with `.default(0)` are `number | null` in TypeScript; always use `?? 0` when doing arithmetic
+- [Async UI task cancellation](async-ui-task-cancellation.md) — keep long-running media work outside state updaters and ignore stale results after reset or new input
