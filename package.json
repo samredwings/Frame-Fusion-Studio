@@ -12,10 +12,7 @@
   "pnpm": {
     "overrides": {
       "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "esbuild": "0.28.2",
-      "uuid": "14.0.1",
-      "qs": "6.15.3"
+      "react-dom": "19.1.0"
     }
   },
   "devDependencies": {
