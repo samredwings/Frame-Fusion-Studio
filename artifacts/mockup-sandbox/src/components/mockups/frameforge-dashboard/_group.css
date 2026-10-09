@@ -1,0 +1,52 @@
+:root,
+.dark {
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
+
+  --background: 240 10% 4%;
+  --foreground: 210 20% 90%;
+  --border: 240 10% 15%;
+  --card: 240 10% 6%;
+  --card-foreground: 210 20% 90%;
+  --card-border: 240 10% 12%;
+  --popover: 240 10% 6%;
+  --popover-foreground: 210 20% 90%;
+  --popover-border: 240 10% 12%;
+  --primary: 24 95% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 10% 12%;
+  --secondary-foreground: 210 20% 90%;
+  --muted: 240 10% 10%;
+  --muted-foreground: 210 20% 60%;
+  --accent: 240 10% 14%;
+  --accent-foreground: 210 20% 90%;
+  --destructive: 0 85% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 240 10% 15%;
+  --ring: 24 95% 55%;
+
+  --sidebar: 240 10% 3%;
+  --sidebar-foreground: 210 20% 85%;
+  --sidebar-border: 240 10% 10%;
+  --sidebar-primary: 24 95% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 10% 12%;
+  --sidebar-accent-foreground: 210 20% 90%;
+  --sidebar-ring: 24 95% 55%;
+
+  --chart-1: 24 95% 55%;
+  --chart-2: 210 90% 55%;
+  --chart-3: 140 85% 45%;
+  --chart-4: 280 85% 55%;
+  --chart-5: 340 85% 55%;
+  --app-font-sans: "Inter", sans-serif;
+  --app-font-serif: Georgia, serif;
+  --app-font-mono: "Space Mono", monospace;
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+  --radius: 0.25rem;
+}
