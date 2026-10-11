@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -73,58 +74,57 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Deep dark cockpit vibe */
-  --background: 240 10% 4%;
-  --foreground: 210 20% 90%;
+  /* Graphite instrument desk, lit by warm signal amber and pale cyan */
+  --background: 214 17% 8%;
+  --foreground: 210 18% 88%;
   
-  --border: 240 10% 15%;
+  --border: 213 13% 20%;
   
-  --card: 240 10% 6%;
-  --card-foreground: 210 20% 90%;
-  --card-border: 240 10% 12%;
+  --card: 214 16% 11%;
+  --card-foreground: 210 18% 88%;
+  --card-border: 213 13% 18%;
   
-  --popover: 240 10% 6%;
-  --popover-foreground: 210 20% 90%;
-  --popover-border: 240 10% 12%;
+  --popover: 214 16% 11%;
+  --popover-foreground: 210 18% 88%;
+  --popover-border: 213 13% 18%;
   
-  /* Precision orange accent */
-  --primary: 24 95% 55%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 35 86% 61%;
+  --primary-foreground: 214 20% 9%;
   
-  --secondary: 240 10% 12%;
-  --secondary-foreground: 210 20% 90%;
+  --secondary: 213 13% 16%;
+  --secondary-foreground: 210 18% 88%;
   
-  --muted: 240 10% 10%;
-  --muted-foreground: 210 20% 60%;
+  --muted: 214 14% 14%;
+  --muted-foreground: 211 11% 60%;
   
-  --accent: 240 10% 14%;
-  --accent-foreground: 210 20% 90%;
+  --accent: 195 28% 18%;
+  --accent-foreground: 190 48% 78%;
   
   --destructive: 0 85% 55%;
   --destructive-foreground: 0 0% 100%;
   
-  --input: 240 10% 15%;
-  --ring: 24 95% 55%;
+  --input: 213 13% 21%;
+  --ring: 35 86% 61%;
   
-  --sidebar: 240 10% 3%;
-  --sidebar-foreground: 210 20% 85%;
-  --sidebar-border: 240 10% 10%;
-  --sidebar-primary: 24 95% 55%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 10% 12%;
-  --sidebar-accent-foreground: 210 20% 90%;
-  --sidebar-ring: 24 95% 55%;
+  --sidebar: 215 18% 7%;
+  --sidebar-foreground: 210 18% 84%;
+  --sidebar-border: 213 13% 16%;
+  --sidebar-primary: 35 86% 61%;
+  --sidebar-primary-foreground: 214 20% 9%;
+  --sidebar-accent: 213 13% 14%;
+  --sidebar-accent-foreground: 210 18% 88%;
+  --sidebar-ring: 35 86% 61%;
 
-  --chart-1: 24 95% 55%;
-  --chart-2: 210 90% 55%;
-  --chart-3: 140 85% 45%;
-  --chart-4: 280 85% 55%;
-  --chart-5: 340 85% 55%;
+  --chart-1: 35 86% 61%;
+  --chart-2: 190 48% 62%;
+  --chart-3: 147 38% 54%;
+  --chart-4: 25 48% 58%;
+  --chart-5: 342 48% 62%;
 
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
-  --app-font-mono: 'Space Mono', monospace;
-  --radius: 0.25rem;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Space Grotesk', sans-serif;
+  --app-font-mono: 'DM Mono', monospace;
+  --radius: 0.45rem;
 
   --shadow-2xs: 0px 2px 0px 0px rgba(0,0,0,0.5);
   --shadow-xs: 0px 2px 0px 0px rgba(0,0,0,0.5);
@@ -153,7 +153,22 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    min-width: 320px;
+    min-height: 100dvh;
   }
+  :focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+}
+
+html, body, #root { min-height: 100%; }
+body { overflow-x: hidden; }
+button, input, select, textarea { font: inherit; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 767px) {
+  .editor-shell { min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+  .editor-tool-tabs { overflow-x: auto; scrollbar-width: none; }
+  .editor-tool-tabs::-webkit-scrollbar { display: none; }
 }
 
 @layer utilities {

@@ -5,6 +5,7 @@ import projectsRouter from "./projects";
 import sourcesRouter from "./sources";
 import blurRegionsRouter from "./blur_regions";
 import frameEditsRouter from "./frame_edits";
+import exportsRouter from "./exports";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(projectsRouter);
 router.use(sourcesRouter);
 router.use(blurRegionsRouter);
 router.use(frameEditsRouter);
+router.use(exportsRouter);
 
 export default router;

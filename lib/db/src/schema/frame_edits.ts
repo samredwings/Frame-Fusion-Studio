@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { projectsTable } from "./projects";
@@ -10,9 +10,12 @@ export const frameEditsTable = pgTable("frame_edits", {
   sourceId: integer("source_id"),
   editType: text("edit_type").notNull().default("replace"),
   replacementDataUrl: text("replacement_data_url"),
+  replacementObjectPath: text("replacement_object_path"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("frame_edits_project_source_frame_idx").on(table.projectId, table.sourceId, table.frameIndex),
+]);
 
 export const insertFrameEditSchema = createInsertSchema(frameEditsTable).omit({ id: true, createdAt: true });
 export type InsertFrameEdit = z.infer<typeof insertFrameEditSchema>;

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, eq } from "drizzle-orm";
-import { db, blurRegionsTable } from "@workspace/db";
+import { db, blurRegionsTable, videoSourcesTable } from "@workspace/db";
 import {
   ListBlurRegionsParams,
   CreateBlurRegionParams,
@@ -39,6 +39,18 @@ router.post("/projects/:id/blur-regions", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const [source] = await db
+    .select({ id: videoSourcesTable.id })
+    .from(videoSourcesTable)
+    .where(and(
+      eq(videoSourcesTable.id, parsed.data.sourceId),
+      eq(videoSourcesTable.projectId, params.data.id),
+    ))
+    .limit(1);
+  if (!source) {
+    res.status(400).json({ error: "Source does not belong to this project" });
+    return;
+  }
   const [region] = await db
     .insert(blurRegionsTable)
     .values({ ...parsed.data, projectId: params.data.id })
@@ -58,6 +70,20 @@ router.patch("/projects/:id/blur-regions/:regionId", async (req, res): Promise<v
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
+  }
+  if (parsed.data.sourceId !== undefined) {
+    const [source] = await db
+      .select({ id: videoSourcesTable.id })
+      .from(videoSourcesTable)
+      .where(and(
+        eq(videoSourcesTable.id, parsed.data.sourceId),
+        eq(videoSourcesTable.projectId, params.data.id),
+      ))
+      .limit(1);
+    if (!source) {
+      res.status(400).json({ error: "Source does not belong to this project" });
+      return;
+    }
   }
   const [region] = await db
     .update(blurRegionsTable)

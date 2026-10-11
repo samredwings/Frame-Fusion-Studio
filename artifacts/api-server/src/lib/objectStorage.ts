@@ -37,6 +37,14 @@ export class ObjectNotFoundError extends Error {
   }
 }
 
+export class InvalidObjectPathError extends Error {
+  constructor() {
+    super("Invalid private object path");
+    this.name = "InvalidObjectPathError";
+    Object.setPrototypeOf(this, InvalidObjectPathError.prototype);
+  }
+}
+
 export class ObjectStorageService {
   constructor() {}
 
@@ -173,6 +181,38 @@ export class ObjectStorageService {
 
     const entityId = rawObjectPath.slice(objectEntityDir.length);
     return `/objects/${entityId}`;
+  }
+
+  normalizePrivateObjectEntityPath(rawPath: string): string {
+    const normalizedPath = this.normalizeObjectEntityPath(rawPath);
+    if (!normalizedPath.startsWith("/objects/")) {
+      throw new InvalidObjectPathError();
+    }
+
+    const entityId = normalizedPath.slice("/objects/".length);
+    const segments = entityId.split("/");
+    if (
+      segments.length !== 2 ||
+      segments[0] !== "uploads" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(segments[1])
+    ) {
+      throw new InvalidObjectPathError();
+    }
+
+    return normalizedPath;
+  }
+
+  async deleteObjectEntity(rawPath: string): Promise<void> {
+    const objectPath = this.normalizePrivateObjectEntityPath(rawPath);
+    let objectFile: File;
+    try {
+      objectFile = await this.getObjectEntityFile(objectPath);
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) return;
+      throw error;
+    }
+
+    await objectFile.delete({ ignoreNotFound: true });
   }
 
   async trySetObjectEntityAclPolicy(

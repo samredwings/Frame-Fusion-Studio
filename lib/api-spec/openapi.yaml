@@ -426,6 +426,70 @@ paths:
         "204":
           description: Deleted
 
+  /projects/{id}/exports:
+    get:
+      operationId: listProjectExports
+      tags: [exports]
+      summary: List saved exports for a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Saved exports, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectExport"
+    post:
+      operationId: createProjectExport
+      tags: [exports]
+      summary: Save an export record for a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectExportInput"
+      responses:
+        "201":
+          description: Export record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectExport"
+
+  /projects/{id}/exports/{exportId}:
+    delete:
+      operationId: deleteProjectExport
+      tags: [exports]
+      summary: Delete a saved export and its stored file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: exportId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Export deleted
+
   /projects/{id}/stats:
     get:
       operationId: getProjectStats
@@ -610,12 +674,15 @@ components:
 
     BlurRegion:
       type: object
-      required: [id, projectId, label, blurType, frameStart, frameEnd, trackingEnabled, masked, createdAt]
+      required: [id, projectId, sourceId, label, blurType, frameStart, frameEnd, trackingEnabled, masked, createdAt]
       properties:
         id:
           type: integer
         projectId:
           type: integer
+        sourceId:
+          type: ["integer", "null"]
+          description: Source video this region belongs to; null is reserved for legacy regions
         label:
           type: string
         blurType:
@@ -649,8 +716,10 @@ components:
 
     BlurRegionInput:
       type: object
-      required: [label, blurType, frameStart, frameEnd]
+      required: [sourceId, label, blurType, frameStart, frameEnd]
       properties:
+        sourceId:
+          type: integer
         label:
           type: string
         blurType:
@@ -678,6 +747,8 @@ components:
     BlurRegionUpdate:
       type: object
       properties:
+        sourceId:
+          type: integer
         label:
           type: string
         blurType:
@@ -704,7 +775,7 @@ components:
 
     FrameEdit:
       type: object
-      required: [id, projectId, frameIndex, sourceId, editType, createdAt]
+      required: [id, projectId, frameIndex, sourceId, editType, replacementObjectPath, createdAt]
       properties:
         id:
           type: integer
@@ -720,7 +791,10 @@ components:
           enum: [replace, merge, skip]
         replacementDataUrl:
           type: ["string", "null"]
-          description: Base64 data URL of replacement image (for replace edits)
+          description: Legacy base64 data URL; new replacements use object storage
+        replacementObjectPath:
+          type: ["string", "null"]
+          description: Private object path for a replacement frame image
         notes:
           type: ["string", "null"]
         createdAt:
@@ -728,7 +802,7 @@ components:
 
     FrameEditInput:
       type: object
-      required: [frameIndex, editType]
+      required: [frameIndex, sourceId, editType]
       properties:
         frameIndex:
           type: integer
@@ -738,9 +812,53 @@ components:
           type: string
           enum: [replace, merge, skip]
         replacementDataUrl:
+          deprecated: true
+          type: string
+        replacementObjectPath:
           type: string
         notes:
           type: string
+
+    ProjectExport:
+      type: object
+      required: [id, projectId, sourceId, filename, format, objectPath, fileSize, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        sourceId:
+          type: ["integer", "null"]
+          description: Source video used to render this export; null if the source is later removed
+        filename:
+          type: string
+        format:
+          type: string
+        objectPath:
+          type: string
+        fileSize:
+          type: integer
+        createdAt:
+          type: string
+
+    ProjectExportInput:
+      type: object
+      required: [sourceId, filename, format, objectPath, fileSize]
+      properties:
+        sourceId:
+          type: integer
+        filename:
+          type: string
+          minLength: 1
+        format:
+          type: string
+          minLength: 1
+        objectPath:
+          type: string
+          minLength: 1
+        fileSize:
+          type: integer
+          minimum: 1
 
     UploadUrlRequest:
       type: object
